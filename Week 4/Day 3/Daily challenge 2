@@ -1,0 +1,18 @@
+//create a function that returns true if all parameters are truthy, and false otherwise. 
+Example
+//all truthy(true,true,true) // returns true
+//all truthy(true,false,true) // returns false
+//all truthy(5,4,3,2,1,0) // returns false
+//all truthy("a","b","c") // returns true
+//all truthy("a","","c") // returns false
+
+function allTruthy(...args) {
+    return args.every(Boolean);
+}
+
+// Test cases
+console.log(allTruthy(true, true, true)); // returns true
+console.log(allTruthy(true, false, true)); // returns false
+console.log(allTruthy(5, 4, 3, 2, 1, 0)); // returns false
+console.log(allTruthy("a", "b", "c")); // returns true
+console.log(allTruthy("a", "", "c")); // returns false      

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Giphy Randomizer</title>
+    <style>
+        .gif-container { display: inline-block; margin: 10px; vertical-align: top; }
+        img { display: block; max-width: 200px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <form id="searchForm">
+        <input type="text" id="categoryInput" placeholder="Enter category (e.g. sun)" required>
+        <button type="submit">Fetch Gif</button>
+        <button type="button" id="deleteAll">Delete All</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script src="script.js">
+        const apiKey = "hpvZycW22qCjn5cRM1xtWB8NKq4dQ2My";
+const form = document.getElementById('searchForm');
+const resultsDir = document.getElementById('results');
+const deleteAllBtn = document.getElementById('deleteAll');
+
+// Event Listener for Form Submission
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const category = document.getElementById('categoryInput').value;
+    
+    // Call the async function to fetch data
+    const gifData = await fetchRandomGif(category);
+    
+    if (gifData) {
+        addGifToPage(gifData.images.fixed_height.url, category);
+    }
+    
+    document.getElementById('categoryInput').value = ""; // Clear input
+});
+
+// The Async/Await Fetch Function
+async function fetchRandomGif(tag) {
+    const url = `https://api.giphy.com/v1/gifs/random?tag=${tag}&api_key=${apiKey}`;
+    
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const { data } = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error("Failed to fetch GIF:", error);
+        alert("Oops! Could not find a GIF for that category.");
+        return null;
+    }
+}
+
+// Function to append the GIF and the Delete button
+function addGifToPage(url, category) {
+    const container = document.createElement('div');
+    container.classList.add('gif-container');
+
+    const img = document.createElement('img');
+    img.setAttribute('src', url);
+    img.setAttribute('alt', category);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'DELETE';
+    
+    // Individual Delete Logic
+    deleteBtn.addEventListener('click', () => {
+        container.remove();
+    });
+
+    container.appendChild(img);
+    container.appendChild(deleteBtn);
+    resultsDir.appendChild(container);
+}
+
+// Global Delete Logic
+deleteAllBtn.addEventListener('click', () => {
+    resultsDir.innerHTML = "";
+});
+    </script>
+</body>
+</html>
