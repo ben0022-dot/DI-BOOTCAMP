@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars Character Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        /* Star Wars Aesthetic Styles */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background: #000 url('https://www.transparenttextures.com/patterns/stardust.png');
+            color: #FFE300; /* Classic Star Wars Yellow */
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(20, 20, 20, 0.8);
+            padding: 3rem;
+            border-radius: 15px;
+            border: 2px solid #FFE300;
+            box-shadow: 0 0 20px rgba(255, 227, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        #content-area {
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .data-item {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #fff;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .data-label {
+            color: #FFE300;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        button {
+            background: transparent;
+            color: #FFE300;
+            border: 2px solid #FFE300;
+            padding: 15px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        button:hover {
+            background: #FFE300;
+            color: #000;
+            box-shadow: 0 0 15px #FFE300;
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        /* Loading & Error Styles */
+        .loading-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-msg {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Star Wars</h1>
+        
+        <div id="content-area">
+            <div id="display-info">
+                <p class="data-item">Click the button to find a character from a galaxy far, far away...</p>
+            </div>
+        </div>
+
+        <button id="fetch-btn">Find Random Character</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const displayArea = document.getElementById('display-info');
+        const fetchBtn = document.getElementById('fetch-btn');
+
+        /**
+         * Get a random character ID (API has ~83 characters)
+         */
+        const getRandomId = () => Math.floor(Math.random() * 83) + 1;
+
+        /**
+         * Fetch homeworld name specifically
+         */
+        async function getHomeworld(url) {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.result.properties.name;
+            } catch {
+                return "Unknown";
+            }
+        }
+
+        /**
+         * Main Function: Get and Display Data
+         */
+        async function getCharacterData() {
+            // 1. Setup Loading State
+            fetchBtn.disabled = true;
+            displayArea.innerHTML = `
+                <div class="loading-icon">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+                <p>Searching the archives...</p>
+            `;
+
+            try {
+                const id = getRandomId();
+                const response = await fetch(`https://www.swapi.tech/api/people/${id}`);
+                
+                if (!response.ok) throw new Error("Character not found");
+
+                const data = await response.json();
+                const char = data.result.properties;
+
+                // 2. Fetch homeworld name using the provided URL
+                const homeworldName = await getHomeworld(char.homeworld);
+
+                // 3. Update DOM
+                displayArea.innerHTML = `
+                    <h2 class="data-item" style="color:#FFE300; font-size: 1.8rem;">${char.name}</h2>
+                    <div class="data-item"><span class="data-label">Height:</span> ${char.height} cm</div>
+                    <div class="data-item"><span class="data-label">Gender:</span> ${char.gender}</div>
+                    <div class="data-item"><span class="data-label">Birth Year:</span> ${char.birth_year}</div>
+                    <div class="data-item"><span class="data-label">Homeworld:</span> ${homeworldName}</div>
+                `;
+
+            } catch (error) {
+                // 4. Error Handling
+                console.error(error);
+                displayArea.innerHTML = `
+                    <div class="loading-icon" style="color: #ff4444;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <p class="error-msg">Oh No! That person isn't available.</p>
+                `;
+            } finally {
+                fetchBtn.disabled = false;
+            }
+        }
+
+        // Event Listener
+        fetchBtn.addEventListener('click', getCharacterData);
+    </script>
+</body>
+</html>
