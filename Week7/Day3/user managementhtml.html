@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - User Management</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Register</h2>
+    <form id="registerForm">
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" name="first_name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" name="last_name" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="6">
+      </div>
+      
+      <button type="submit" class="submit-btn" disabled>Register</button>
+    </form>
+    
+    <div id="message"></div>
+    
+    <div class="links">
+      <a href="/login.html">Already have an account? Login</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const submitBtn = form.querySelector('.submit-btn');
+    const messageDiv = document.getElementById('message');
+
+    // Check if all fields are filled
+    function checkFormValidity() {
+      const inputs = form.querySelectorAll('input[required]');
+      const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
+      submitBtn.disabled = !allFilled;
+    }
+
+    // Add event listeners to inputs
+    form.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', checkFormValidity);
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      const userData = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('/api/users/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('User registered successfully! You can now login.', 'success');
+          form.reset();
+          submitBtn.disabled = true;
+        } else {
+          showMessage(result.error || 'Registration failed', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error. Please try again.', 'error');
+      }
+    });
+
+    function showMessage(text, type) {
+      messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+      setTimeout(() => {
+        messageDiv.innerHTML = '';
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

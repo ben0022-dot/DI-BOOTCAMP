@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - User Management</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      
+      <button type="submit" class="submit-btn" disabled>Login</button>
+    </form>
+    
+    <div id="message"></div>
+    
+    <div class="links">
+      <a href="/register.html">Don't have an account? Register</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const submitBtn = form.querySelector('.submit-btn');
+    const messageDiv = document.getElementById('message');
+
+    // Check if all fields are filled
+    function checkFormValidity() {
+      const inputs = form.querySelectorAll('input[required]');
+      const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
+      submitBtn.disabled = !allFilled;
+    }
+
+    // Add event listeners to inputs
+    form.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', checkFormValidity);
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      const userData = Object.fromEntries(formData);
+      
+      try {
+        const response = await fetch('/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('Login successful! Welcome back.', 'success');
+        } else {
+          showMessage(result.error || 'Login failed', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error. Please try again.', 'error');
+      }
+    });
+
+    function showMessage(text, type) {
+      messageDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+      setTimeout(() => {
+        messageDiv.innerHTML = '';
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
